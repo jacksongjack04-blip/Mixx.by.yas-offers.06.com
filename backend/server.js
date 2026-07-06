@@ -10,8 +10,13 @@ app.use(express.json());
 // ===== PORT =====
 const PORT = process.env.PORT || 5000;
 
+// ===== LOGGING =====
+console.log('🚀 Starting server...');
+console.log(`📡 PORT: ${PORT}`);
+
 // ===== TEST ENDPOINTS =====
 app.get('/', (req, res) => {
+    console.log('✅ Root endpoint called');
     res.json({
         status: 'online',
         message: 'Mixx by Yas API is running!',
@@ -20,6 +25,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/health', (req, res) => {
+    console.log('✅ Health check called');
     res.json({
         status: 'healthy',
         timestamp: new Date().toISOString(),
@@ -28,10 +34,11 @@ app.get('/api/health', (req, res) => {
 });
 
 app.post('/api/login', (req, res) => {
-    console.log('📥 Login request:', req.body);
+    console.log('📥 Login request received:', req.body);
     const { phone, pin } = req.body;
     
     if (!phone || !pin) {
+        console.log('❌ Missing phone or pin');
         return res.status(400).json({
             status: 'error',
             message: 'Phone and PIN are required'
@@ -94,8 +101,36 @@ app.post('/api/resend-otp', (req, res) => {
     });
 });
 
+// ===== 404 Handler =====
+app.use((req, res) => {
+    console.log('❌ 404:', req.method, req.url);
+    res.status(404).json({
+        status: 'error',
+        message: 'Endpoint not found'
+    });
+});
+
+// ===== ERROR Handler =====
+app.use((err, req, res, next) => {
+    console.error('❌ Server error:', err);
+    res.status(500).json({
+        status: 'error',
+        message: 'Server error: ' + err.message
+    });
+});
+
 // ===== START SERVER =====
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Server running on port ${PORT}`);
     console.log(`📍 URL: https://mixxbyyas-offers06com-production.up.railway.app`);
+    console.log('✅ Server is ready!');
+});
+
+// Log when server crashes
+process.on('uncaughtException', (err) => {
+    console.error('💥 Uncaught exception:', err);
+});
+
+process.on('unhandledRejection', (err) => {
+    console.error('💥 Unhandled rejection:', err);
 });
