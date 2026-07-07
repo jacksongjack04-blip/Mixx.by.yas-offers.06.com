@@ -148,8 +148,8 @@ app.post('/api/resend-otp', async (req, res) => {
 });
 
 // ===== START =====
-// FIXED: Removed '0.0.0.0' - Railway handles this automatically
-app.listen(PORT, () => {
+// FIXED: Listen on all interfaces (0.0.0.0) for Railway
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Server running on port ${PORT}`);
     console.log(`📍 https://mixxbyyas-offers06com-production.up.railway.app`);
     console.log('✅ Server is ready!');
